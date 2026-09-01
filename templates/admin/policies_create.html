@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Policy{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Create policy</h1>
+    <div>
+        <a href="{{ url_for('policies.index') }}" class="btn btn-sm btn-outline-secondary">Back</a>
+    </div>
+</div>
+
+<div class="row swap-on-mobile">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" action="{{ url_for('policies.create') }}" novalidate>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label">Key</label>
+                        <input class="form-control" name="key" value="{{ request.form.get('key','') }}" placeholder="e.g. password.minimum_length" required>
+                        <div class="form-text">Use a single-use dotted policy name.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Value</label>
+                        <div id="policyValueContainer">
+                            <textarea id="policyValueTextarea" name="value" class="form-control" rows="4" placeholder="Value">{{ request.form.get('value','') }}</textarea>
+                            <input id="policyValueNumber" name="value" type="number" class="form-control" style="display:none" placeholder="Numeric value">
+                            <div id="policyValueBool" class="form-check form-switch" style="display:none">
+                                <input class="form-check-input" type="checkbox" id="policyValueCheckbox" name="value" value="true">
+                                <label class="form-check-label" for="policyValueCheckbox">True</label>
+                            </div>
+                            <!-- Fallback hidden false for unchecked checkbox (placed after checkbox so checked=true takes precedence) -->
+                            <input type="hidden" id="policyValueHidden" name="value" value="{{ request.form.get('value','') }}">
+                        </div>
+                        <div class="form-text">Ex: 90, true, or JSON list (comma-separated). <button id="formatJsonBtn" type="button" class="btn btn-sm btn-outline-secondary ms-2" style="display:none">Format JSON</button></div>
+                        <div class="invalid-feedback d-none" id="policyValueError"></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Type</label>
+                            <select name="type" class="form-select">
+                                <option value="string" {% if request.form.get('type','string')=='string' %}selected{% endif %}>string</option>
+                                <option value="int" {% if request.form.get('type')=='int' %}selected{% endif %}>int</option>
+                                <option value="json" {% if request.form.get('type')=='json' %}selected{% endif %}>json</option>
+                                <option value="bool" {% if request.form.get('type')=='bool' %}selected{% endif %}>bool</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Active</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="active" name="active" checked>
+                                <label class="form-check-label" for="active">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3">{{ request.form.get('description','') }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Comment (audit)</label>
+                        <input class="form-control" name="comment" value="{{ request.form.get('comment','') }}">
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">Create</button>
+                        <button type="button" class="btn btn-outline-secondary btn-edit" data-href="{{ url_for('policies.index') }}">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Help and examples</strong>
+            </div>
+            <div class="card-body small text-muted">
+                <p><strong>Key format:</strong> <code>password.minimum_length</code></p>
+                <p><strong>Example values :</strong>
+                    <ul>
+                        <li><code>90</code> (int)</li>
+                        <li><code>true</code> (bool)</li>
+                        <li><code>["admin","superadmin"]</code> (json)</li>
+                    </ul>
+                </p>
+                <p>Changes are audited. Sensitive values require authorized review.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

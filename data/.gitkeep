@@ -1,0 +1,2 @@
+# This directory contains the SQLite database and runtime data files.
+# It is mounted as a persistent Docker volume.

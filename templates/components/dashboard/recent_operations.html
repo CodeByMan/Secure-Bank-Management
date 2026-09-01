@@ -1,0 +1,39 @@
+<!-- Recent Operations -->
+<div style="margin-top: 32px;">
+    <h2 style="font-size: 18px; font-weight: 400; margin-bottom: 24px;">Recent operations</h2>
+
+    <div class="timeline">
+        {% for op in operations %}
+        <div class="timeline-item">
+            <div class="timeline-icon {% if op.operation_type.value == 'deposit' %}success{% else %}warning{% endif %}"></div>
+            <div class="timeline-body">
+                <div class="timeline-header">
+                    <div class="timeline-title">
+                        {% if op.operation_type.value == 'deposit' %}
+                            Deposit <span class="amount positive" style="color: green;">+{{ "%.2f"|format(op.amount) }} PKR</span>
+                        {% else %}
+                            Withdrawal <span class="amount negative" style="color: red;">-{{ "%.2f"|format(op.amount) }} PKR</span>
+                        {% endif %}
+                    </div>
+                    <div class="timeline-time">
+                        {% set op_local = op.operation_date|to_local_time %}
+                        {% set today = now().date() %}
+                        {% if op.operation_date.date() == today %}
+                            {{ op_local.strftime('%H:%M') }}
+                        {% elif (today - op.operation_date.date()).days == 1 %}
+                            Yesterday {{ op_local.strftime('%H:%M') }}
+                        {% else %}
+                            {{ op_local.strftime('%d %b %H:%M') }}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="timeline-desc"><a href="{{ url_for('accounts.view', account_number=op.account.account_number) }}">{{ op.account.account_number }}</a> • By {{ op.user.username or 'N/A' }} • Balance after: {{ "%.2f"|format(op.balance_after) }} PKR</div>
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; color: var(--text-secondary); padding: 32px;">
+            No recent operations
+        </div>
+        {% endfor %}
+    </div>
+</div>

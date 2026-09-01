@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Configure 2FA - Secure Bank Manager{% endblock %}
+
+{% block content %}
+
+<style>
+  /* Responsive wide-screen layout without altering design */
+  .twofa-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 70vh;
+    width: 100%;
+    text-align: center;
+    padding: 0 1rem; /* prevent edge touching on very wide/small screens */
+  }
+
+  .twofa-card {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* wide screens: make steps two columns */
+  @media (min-width: 992px) {
+    .twofa-card {
+      max-width: 1000px; /* wider only on desktop */
+    }
+
+    .twofa-steps-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    .twofa-divider {
+      display: none; /* remove hr in wide grid mode */
+    }
+
+    .twofa-step {
+      margin-bottom: 0 !important;
+    }
+  }
+
+  /* keep HR for mobile */
+  @media (max-width: 991.98px) {
+    .twofa-steps-grid {
+      display: block;
+    }
+    .twofa-divider {
+      display: block;
+    }
+  }
+
+  /* Make QR and inputs adapt slightly without changing design */
+  img.twofa-qr {
+    max-width: 180px;
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>
+
+<div class="twofa-wrapper">
+
+  {% if success %}
+  <!-- RECOVERY CODE SUCCESS VIEW -->
+  <div class="card shadow border-0" style="width: 100%; max-width: 600px; margin: 0 auto; border-radius: 1.5rem;">
+      <div class="card-body p-4 p-md-5 text-center">
+          <div style="background-color: #198754; width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+              <i class="bi bi-shield-check text-white" style="font-size: 2.5rem;"></i>
+          </div>
+          <h2 style="font-weight: 800; font-size: 1.8rem; margin-bottom: 1rem;">MFA enabled!</h2>
+          <p class="text-danger fw-bold mb-4" style="background: #fff8f8; padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #ffebeb;">⚠️ SAVE YOUR RECOVERY CODES</p>
+          <p style="color: #6c757d; margin-bottom: 2rem; font-size: 0.95rem;">Store these one-time recovery codes securely.</p>
+
+          <div style="background-color: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 1rem; padding: 1.5rem; margin-bottom: 2rem;">
+              <div class="row g-2">
+                  {% for c in recovery_codes %}
+                  <div class="col-6">
+                      <div style="background: white; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #eee; font-family: 'Courier New', monospace; font-weight: bold; font-size: 1.2rem; letter-spacing: 2px; color: #333;">
+                          {{ c }}
+                      </div>
+                  </div>
+                  {% endfor %}
+              </div>
+          </div>
+
+          <div class="d-grid gap-2 mb-4">
+            <button class="btn btn-outline-primary"
+                    onclick="copyAllCodes(this)"
+                    id="copyBtn"
+                    data-codes="{% for c in recovery_codes %}{{ c }}{% if not loop.last %}\n{% endif %}{% endfor %}">
+                <i class="bi bi-clipboard me-2"></i> Copy all codes
+            </button>
+            <button class="btn btn-outline-dark" onclick="window.print()">
+                <i class="bi bi-printer me-2"></i> Print or save as PDF
+            </button>
+            <a href="{{ url_for('home') }}" class="btn btn-success btn-lg fw-bold" style="height: 60px; display: flex; align-items: center; justify-content: center;">
+                I stored the recovery codes
+            </a>
+          </div>
+
+          <script>
+            function copyAllCodes(btn) {
+                const codes = btn.getAttribute('data-codes');
+                navigator.clipboard.writeText(codes.replace(/\\n/g, '\n'));
+                const originalHtml = btn.innerHTML;
+              btn.innerHTML = '<i class="bi bi-check2-all me-2"></i> Codes copied!';
+                btn.classList.replace('btn-outline-primary', 'btn-success');
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.replace('btn-success', 'btn-outline-primary');
+                }, 2000);
+            }
+          </script>
+      </div>
+  </div>
+  {% else %}
+
+  <div class="card shadow border-0 twofa-card">
+    <div class="card-body p-4 p-md-5" style="text-align: center !important;">
+
+      <!-- Header section -->
+      <div style="margin-bottom: 1.5rem;">
+        <div style="background-color: rgba(13, 110, 253, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+          <i class="bi bi-shield-lock text-primary" style="font-size: 2.5rem;"></i>
+        </div>
+        <h2 style="font-weight: 700; font-size: 1.75rem; margin-bottom: 0.75rem; text-align: center;">Enable multi-factor authentication</h2>
+        <p style="color: #6c757d; margin: 0 auto; max-width: 450px; text-align: center;">Add a second factor to this local account.</p>
+      </div>
+
+      <!-- Content steps -->
+      <div style="width: 100%;">
+        <div class="twofa-steps-grid">
+
+          <!-- Step 1 -->
+          <div class="twofa-step" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem;">
+              <span style="background-color: #0d6efd; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 0.5rem;">1</span>
+              <h5 style="font-weight: 700; margin: 0; text-align: center;">Scan the QR code</h5>
+            </div>
+
+            <div style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 1rem; padding: 1.5rem; display: flex; flex-direction: column; align-items: center;">
+              <div style="background-color: white; padding: 1rem; border-radius: 0.5rem; box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075); margin-bottom: 1rem;">
+                <img src="data:image/png;base64,{{ qr_code }}" alt="MFA QR Code" class="twofa-qr">
+              </div>
+
+              <p style="font-size: 0.875rem; color: #6c757d; margin-bottom: 1.5rem; text-align: center;">Use your authenticator app.</p>
+
+              <div style="width: 100%; max-width: 370px; margin: 0 auto;">
+                <small style="text-transform: uppercase; letter-spacing: 0.05rem; color: #adb5bd; font-weight: 700; font-size: 0.75rem; display: block; margin-bottom: 0.5rem; text-align: center;">Manual code</small>
+                <div style="display: flex; border: 1px solid #ced4da; border-radius: 0.375rem; background-color: white; overflow: hidden; justify-content: center;">
+                  <code style="padding: 0.5rem 1rem; flex-grow: 1; color: #0d6efd; background-color: transparent; border: none; font-size: 1rem; text-align: center;">{{ secret }}</code>
+                  <button type="button" style="padding: 0.5rem; border: none; border-left: 1px solid #ced4da; background-color: #f8f9fa; cursor: pointer;" onclick="navigator.clipboard.writeText('{{ secret }}'); alert('Secret copied!')">
+                    <i class="bi bi-clipboard"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="twofa-divider" style="margin: 1.5rem 0; opacity: 0.1;">
+
+          <!-- Step 2 -->
+          <div class="twofa-step" style="text-align: center;">
+            <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem;">
+              <span style="background-color: #0d6efd; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-bottom: 0.5rem;">2</span>
+              <h5 style="font-weight: 700; margin: 0; text-align: center;">Verify the code</h5>
+            </div>
+
+            <form method="POST" style="max-width: 300px; margin: 0 auto;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div style="margin-bottom: 1.5rem;">
+                <input type="text" name="code" maxlength="6" required placeholder="000000"
+                       style="width: 100%; height: 70px; font-size: 2rem; text-align: center; font-weight: 700; letter-spacing: 0.5rem; border: 1px solid #ced4da; border-radius: 0.5rem; display: block; margin: 0 auto;">
+              </div>
+              <button type="submit" class="btn btn-primary" style="width: 100%; height: 60px; font-weight: 700; border-radius: 0.5rem;">
+                Confirm activation
+              </button>
+            </form>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Cancel -->
+      <div style="margin-top: 3rem; text-align: center;">
+        <a href="{{ url_for('home') }}" style="color: #6c757d; text-decoration: none; font-size: 0.875rem;">
+          <i class="bi bi-x-circle"></i> Back without enabling
+        </a>
+      </div>
+
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

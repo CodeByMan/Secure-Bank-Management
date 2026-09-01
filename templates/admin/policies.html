@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Policies — Secure Bank Manager{% endblock %}
+{% block content %}
+<div class="card mb-4 shadow-sm"><div class="card-body d-flex justify-content-between align-items-center">
+  <div><h1 class="h5 mb-0">Authoritative Policies</h1><small class="text-muted">These values drive both display and enforcement.</small></div>
+  {% if has_permission(g.user, 'policies.create') %}<a class="btn btn-sm btn-primary" href="{{ url_for('policies.create') }}">Create policy</a>{% endif %}
+</div></div>
+<div class="table-responsive shadow-sm"><table class="table table-hover align-middle">
+  <thead><tr><th>Key</th><th>Value</th><th>Type</th><th>State</th><th>Changed</th><th>Actions</th></tr></thead>
+  <tbody>{% for p in policies %}<tr>
+    <td><code>{{ p.key }}</code></td><td><code>{{ p.value }}</code></td><td>{{ p.type }}</td>
+    <td>{{ 'Active' if p.active else 'Inactive' }}</td><td>{{ p.updated_at|to_local_time if p.updated_at else '-' }}</td>
+    <td>
+      {% if has_permission(g.user, 'policies.edit') %}<a class="btn btn-sm" href="{{ url_for('policies.edit', key=p.key) }}">Edit</a>{% endif %}
+      {% if has_permission(g.user, 'policies.toggle') %}<form method="post" action="{{ url_for('policies.toggle', id=p.id) }}" style="display:inline"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-sm" type="submit">{{ 'Disable' if p.active else 'Enable' }}</button></form>{% endif %}
+    </td>
+  </tr>{% else %}<tr><td colspan="6">No policies initialized.</td></tr>{% endfor %}</tbody>
+</table></div>
+{% endblock %}

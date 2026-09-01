@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ client.full_name }} - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 16px;">
+    <a href="{{ url_for('clients.index') }}" style="color: var(--text-secondary); text-decoration: none; font-size: 14px;">← Back to list</a>
+</div>
+
+<h1 style="font-size: 24px; font-weight: 400; margin-bottom: 24px;">{{ client.full_name }}</h1>
+
+<div class="client-grid">
+    <!-- Client information -->
+    <div class="card">
+        <div class="card-header">Client Information</div>
+        <div class="card-body">
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Synthetic ID</div>
+                <div style="font-weight: 500;">{{ client.cin }}</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Phone</div>
+                <div>{{ client.phone }}</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Email</div>
+                <div>{{ client.email or '-' }}</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Address</div>
+                <div style="font-size: 13px;">{{ client.address or '-' }}</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Created at</div>
+                <div>{{ client.created_at.strftime('%d/%m/%Y') }}</div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">Current Status</div>
+                <div>
+                    {# Status Badge #}
+                    {% if client.status.value == 'active' %}
+                        <span class="badge badge-success">Active</span>
+                    {% elif client.status.value == 'inactive' %}
+                        <span class="badge badge-warning">Inactive</span>
+                    {% elif client.status.value == 'suspended' %}
+                        <span class="badge bg-danger">Suspended</span>
+                    {% elif client.status.value == 'archived' %}
+                        <span class="badge bg-secondary">Archived</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+
+            {# Client management #}
+            {# only show if user has permission #}
+
+            {% if g.user is defined and (has_permission(g.user, 'clients.suspend') or has_permission(g.user, 'clients.deactivate') or has_permission(g.user, 'clients.archived') or has_permission(g.user, 'clients.reactivate')) %}
+            <div class="management-actions" role="region" aria-label="Client management">
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">Client management</div>
+
+                {% if client.status.value == 'active' %}
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        {% if g.user is defined and has_permission(g.user, 'clients.suspend') %}
+                            <button type="button" class="btn btn-warning" style="width: 100%; padding: 8px; font-size: 13px; color: #b06000;" onclick="handleMgmt('suspend')">Suspend Client</button>
+                        {% endif %}
+
+                        {% if g.user is defined and has_permission(g.user, 'clients.deactivate') %}
+                            <button type="button" class="btn btn-danger" style="width: 100%; padding: 8px; font-size: 13px;" onclick="handleMgmt('inactive')">Disable Client</button>
+                        {% endif %}
+
+                        {% if g.user is defined and has_permission(g.user, 'clients.archived') %}
+                            <button type="button" class="btn" style="width: 100%; padding: 8px; font-size: 13px; border: 1px solid var(--border-color);" onclick="handleMgmt('archived')">Archive Client</button>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    {% if g.user is defined and has_permission(g.user, 'clients.reactivate') %}
+                        <button type="button" class="btn btn-success" style="width: 100%; padding: 8px; font-size: 13px;" onclick="handleMgmt('reactivate')">Reactivate Client</button>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reusable Modal -->
+    {% include 'components/management_modal.html' %}
+
+    <script>
+    const mgmtConfigs = {
+        suspend: {
+            title: 'Suspend client',
+            action: '{{ url_for("clients.deactivate", id=client.id) }}',
+            extraField: { name: 'status', value: 'suspended' },
+            submitText: 'Confirm suspension',
+            submitStyle: 'background: #fbbc04; border-color: #fbbc04; color: #202124;',
+            reasons: [
+                'Fraud exercise flag',
+                'Incomplete KYC case',
+                'Legal hold',
+                'Suspicious behavior',
+                'Review in progress'
+            ]
+        },
+        inactive: {
+            title: 'Disable client',
+            action: '{{ url_for("clients.deactivate", id=client.id) }}',
+            extraField: { name: 'status', value: 'inactive' },
+            submitText: 'Confirm deactivation',
+            submitStyle: 'background: #d93025; border-color: #d93025; color: white;',
+            reasons: ['Client request', 'Extended inactivity', 'Compliance review', 'Administrative decision', 'End of relationship']
+        },
+        archived: {
+            title: 'Archive client',
+            action: '{{ url_for("clients.deactivate", id=client.id) }}',
+            extraField: { name: 'status', value: 'archived' },
+            submitText: 'Confirm archiving',
+            submitStyle: 'background: #6c757d; border-color: #6c757d; color: white;',
+            reasons: ['Permanent case closure', 'Retention requirement', 'Client relationship ended', 'Former fictional client']
+        },
+        reactivate: {
+            title: 'Reactivate client',
+            action: '{{ url_for("clients.reactivate", id=client.id) }}',
+            submitText: 'Confirm reactivation',
+            submitStyle: 'background: #1e8e3e; border-color: #1e8e3e; color: white;',
+            reasons: ['Resume client relationship', 'Correct a status error', 'Approved case review', 'End suspension']
+        }
+    };
+
+    function handleMgmt(type) {
+        showManagementModal(mgmtConfigs[type]);
+    }
+    </script>
+
+    <div class="table-container">
+    <div class="table-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="table-title">Accounts</div>
+        {% if client.status.value == 'active' %}
+            <a href="{{ url_for('accounts.create', client_id=client.id) }}" class="btn btn-primary" style="padding: 6px 16px; font-size: 13px;">New Account</a>
+        {% endif %}
+    </div>
+    {% if accounts %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Number</th>
+                            <th style="text-align: right;">Balance</th>
+                            <th>Status</th>
+                            <th>Opened</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in accounts %}
+                        <tr>
+                            <td style="font-family: monospace;">{{ account.account_number }}</td>
+                            <td style="text-align: right; font-weight: 500;">{{ "%.2f"|format(account.balance) }} PKR</td>
+                            <td>
+                                {% if account.status.value == 'active' %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ account.status.value|status_label }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ (account.opened_at|to_local_time).strftime('%d/%m/%Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('accounts.view', account_number=account.account_number) }}" class="btn" style="padding: 6px 16px; font-size: 13px;">Manage</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 48px; color: var(--text-secondary);">
+                    <p style="margin-bottom: 16px;">This client has no account.</p>
+                    {% if client.status.value == 'active' %}
+                        <a href="{{ url_for('accounts.create', client_id=client.id) }}" class="btn btn-primary">Open first account</a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                </div>
+            </div>
+
+</div>
+{% endblock %}

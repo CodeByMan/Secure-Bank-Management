@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Secure Bank Manager{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+
+    <!-- Alpine.js (local vendor, run scripts/install_vendor_assets.sh to populate) -->
+    <script defer src="{{ url_for('static', filename='vendor/alpine/alpine.min.js') }}"></script>
+
+    <!-- NProgress (local vendor) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='vendor/nprogress/nprogress.min.css') }}" />
+    <script src="{{ url_for('static', filename='vendor/nprogress/nprogress.min.js') }}"></script>
+    <!-- NProgress helper (delayed start + fetch wrapper) -->
+    <script src="{{ url_for('static', filename='js/nprogress-shim.js') }}"></script>
+
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+    {# Maintenance Banner #}
+    {% include 'components/banners/maintenance.html' %}
+
+    {# Panic Mode Banner #}
+    {% include 'components/banners/panic.html' %}
+
+    {# Panic Mode Modal #}
+    {% include 'components/modals/panic.html' %}
+
+    {% include 'components/header/header.html' %}
+
+
+    <!-- ARIA live region for longer operations (screen readers) -->
+    <div id="nprogress-announce" class="sr-only" role="status" aria-live="polite"></div>
+
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <div class="container">
+
+        {% include 'components/flash/flash.html' %}
+
+        <!-- Main content -->
+        {% block content %}{% endblock %}
+    </div>
+
+
+    {% block scripts %}{% endblock %}
+</body>
+{# Load header JS (mobile menu + profile dropdown) #}
+<script src="{{ url_for('static', filename='js/header.js') }}"></script>
+
+{# Main JS (global behaviors) #}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</html>

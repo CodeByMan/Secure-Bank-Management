@@ -1,0 +1,87 @@
+{% macro custom_datalist(name, options, optionValue='id', optionLabel='name', placeholder='Select...', selected=None, required=False, disabled=False, searchable=True, clearable=True, id=None) %}
+{% set componentId = 'datalist-' ~ range(10000)|random %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/datalist.css') }}">
+<div class="custom-datalist {% if id == 'action_datalist' %}wide-datalist{% endif %}" x-data='customDatalist({
+    name: "{{ name }}",
+    options: {{ options | tojson }},
+    optionValue: "{{ optionValue }}",
+    optionLabel: "{{ optionLabel }}",
+    selected: "{{ selected if selected and selected != 'all' else '' }}",
+    searchable: {{ 'true' if searchable else 'false' }},
+})' x-init="init()" @click.away="close()">
+
+
+    <input type="hidden" name="{{ name }}" x-model="selectedValue" x-ref="hidden">
+
+
+    <div class="datalist-input-wrapper" @click.stop="toggle()">
+        <input
+            type="text"
+            id="{{ id if id else componentId }}"
+            class="datalist-input"
+            :class="{
+                'has-value': selectedValue,
+                'disabled': {{ 'true' if disabled else 'false' }},
+                'is-open': isOpen
+            }"
+            x-model="searchQuery"
+            @input="handleSearch()"
+            @click.stop
+            @focus="open()"
+            placeholder="{{ placeholder }}"
+            {{ 'disabled' if disabled else '' }}
+            :readonly="!searchable"
+        >
+
+        <!-- Icons -->
+        <div class="datalist-icons">
+            {% if clearable %}
+                <button
+                    type="button"
+                    class="datalist-clear"
+                    @click.stop="clear()"
+                    x-show="selectedValue"
+                    x-cloak
+                    tabindex="-1"
+                    aria-label="Clear selection">
+                    <i class="bi bi-x" style="font-size: 16px;"></i>
+                </button>
+            {% endif %}
+
+            <div class="datalist-arrow" :class="{ 'open': isOpen }" @click.stop="toggle()" role="button" aria-label="Toggle options">
+                <i class="bi bi-chevron-down" style="font-size: 16px;"></i>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Dropdown List -->
+    <div class="datalist-dropdown" x-show="isOpen" x-cloak x-transition:enter="dropdown-enter" x-transition:leave="dropdown-leave">
+        <div class="datalist-options" x-ref="optionsList">
+            <template x-for="(option, index) in filteredOptions" :key="index">
+                <div
+                    class="datalist-option"
+                    :class="{
+                        'selected': selectedValue == getOptionValue(option),
+                        'highlighted': highlightedIndex === index
+                    }"
+                    @click="select(option)"
+                    @mouseenter="highlightedIndex = index"
+                    :title="getOptionLabel(option)"
+                    :aria-label="getOptionLabel(option)"
+                    x-text="getOptionLabel(option)">
+                </div>
+            </template>
+
+
+            <div class="datalist-no-results" x-show="filteredOptions.length === 0" x-cloak>
+                <i class="bi bi-search" style="font-size: 24px; opacity: 0.5; margin-bottom: 0.5rem;"></i>
+                <span>No result found</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/datalist.js') }}"></script>
+
+{% endmacro %}

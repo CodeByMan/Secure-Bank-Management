@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<h1 style="font-size: 24px; font-weight: 400; margin-bottom: 24px;">Dashboard</h1>
+
+<!-- Stats -->
+{% include 'components/dashboard/stats.html' %}
+
+<!-- Quick actions -->
+{% include 'components/dashboard/quick_actions.html' %}
+
+<!-- Recent operations -->
+{% include 'components/dashboard/recent_operations.html' %}
+{% endblock %}

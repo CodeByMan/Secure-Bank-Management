@@ -1,0 +1,86 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+*.pyc
+
+# Databases
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/*-wal
+data/*-shm
+data/*-journal
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Docker
+.dockerignore
+
+# ignore design previews
+# Supports both singular and plural directories and the static path
+design-previews/*
+design-preview/
+static/design-preview/
+
+# ignore TODO.md files
+TODO.md
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+
+# MyPy / caches
+.mypy_cache/
+.cache/
+
+# pip / build / packaging
+pip-wheel-metadata/
+build/
+dist/
+*.egg-info/
+*.egg
+
+# OS / editor
+.DS_Store
+.Trashes
+
+# Node
+node_modules/
+
+# docs build
+docs/_build/
+
+# local env files
+.env.local
+.env.*.local
+.env.production
+
+# SQLite journaling files
+data/*.sqlite-journal
+
+# packaging artifacts
+*.whl
+
+# temporary files
+*.tmp
+*.swp
+*.swo

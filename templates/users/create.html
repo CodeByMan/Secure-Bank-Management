@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}New User - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 24px; font-weight: 400; margin-bottom: 24px;">Create User</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" required
+                           class="form-control" placeholder="Ex: jean.dupont" autofocus>
+                    <small class="form-text text-muted">Username must be single-use</small>
+                    {% if errors and errors.get('username') %}
+                        <div class="invalid-feedback">{{ errors.get('username') }}</div>
+                    {% else %}
+                        <div class="invalid-feedback" style="display:none;"></div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" required
+                           class="form-control" placeholder="At least 12 characters">
+                    <small class="form-text text-muted">Minimum 12 characters</small>
+                    {% if errors and errors.get('password') %}
+                        <div class="invalid-feedback">{{ errors.get('password') }}</div>
+                    {% else %}
+                        <div class="invalid-feedback" style="display:none;"></div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select id="role" name="role" required class="form-control">
+                        {% for role in manageable_roles %}
+                            <option value="{{ role.value }}">
+                                {% if role.value == 'superadmin' %}
+                                    SUPERADMIN - Full access
+                                {% elif role.value == 'admin' %}
+                                    ADMIN - Can manage operators
+                                {% else %}
+                                    OPERATOR - Operations banking only
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-actions" style="display:flex; gap:12px;">
+                    <button type="submit" class="btn btn-primary">Create user</button>
+                    <a href="{{ url_for('users.index') }}" class="btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

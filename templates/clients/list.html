@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Clients - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <h1 style="font-size: 24px; font-weight: 400;">Clients</h1>
+    <a href="{{ url_for('clients.create') }}" class="btn btn-primary">New Client</a>
+</div>
+
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full name</th>
+                <th>Synthetic ID</th>
+                <th>Status</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+            <tr>
+                <td>{{ client.id }}</td>
+                <td>{{ client.full_name }}</td>
+                <td><span class="badge bg-secondary">{{ client.cin }}</span></td>
+                <td>
+                    {% if client.status.value == 'active' %}
+                        <span class="badge badge-success">Active</span>
+                    {% elif client.status.value == 'inactive' %}
+                        <span class="badge badge-warning">Inactive</span>
+                    {% elif client.status.value == 'suspended' %}
+                        <span class="badge bg-danger">Suspended</span>
+                    {% elif client.status.value == 'archived' %}
+                        <span class="badge bg-secondary">Archived</span>
+                    {% endif %}
+                </td>
+                <td>{{ client.phone }}</td>
+                <td>{{ client.email or '-' }}</td>
+                <td>
+                    <a href="{{ url_for('clients.view', id=client.id) }}" class="btn" style="padding: 6px 16px; font-size: 13px;">View</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                    No client found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+{% endblock %}

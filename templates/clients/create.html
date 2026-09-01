@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}New Client - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <h1 style="font-size: 24px; font-weight: 400; margin-bottom: 24px;">Create a New Client</h1>
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label for="last_name" class="form-label">Last name *</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        {% if errors and errors.get('last_name') %}
+                            <div class="invalid-feedback">{{ errors.get('last_name') }}</div>
+                        {% else %}
+                            <div class="invalid-feedback" style="display:none;"></div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="first_name" class="form-label">First name *</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        {% if errors and errors.get('first_name') %}
+                            <div class="invalid-feedback">{{ errors.get('first_name') }}</div>
+                        {% else %}
+                            <div class="invalid-feedback" style="display:none;"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div>
+                        <label for="cin" class="form-label">Synthetic identity reference *</label>
+                        <input type="text" class="form-control" id="cin" name="cin" required>
+                        {% if errors and errors.get('cin') %}
+                            <div class="invalid-feedback">{{ errors.get('cin') }}</div>
+                        {% else %}
+                            <div class="invalid-feedback" style="display:none;"></div>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="phone" class="form-label">Phone *</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                        {% if errors and errors.get('phone') %}
+                            <div class="invalid-feedback">{{ errors.get('phone') }}</div>
+                        {% else %}
+                            <div class="invalid-feedback" style="display:none;"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="email" name="email">
+                    {% if errors and errors.get('email') %}
+                        <div class="invalid-feedback">{{ errors.get('email') }}</div>
+                    {% else %}
+                        <div class="invalid-feedback" style="display:none;"></div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="address" class="form-label">Full Address</label>
+                    <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                    {% if errors and errors.get('address') %}
+                        <div class="invalid-feedback">{{ errors.get('address') }}</div>
+                    {% else %}
+                        <div class="invalid-feedback" style="display:none;"></div>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 32px;">
+                    <a href="{{ url_for('clients.index') }}" class="btn">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save Client</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

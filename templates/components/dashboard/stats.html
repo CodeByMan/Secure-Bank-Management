@@ -1,0 +1,32 @@
+{# Defensive fallbacks: avoid errors when `stats` is not provided by the caller #}
+{% set s = stats if (stats is defined) else {} %}
+
+<!-- Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Clients</div>
+        <div class="stat-value">{{ s.total_clients|default('-') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Active accounts</div>
+        <div class="stat-value">{{ s.active_accounts|default('-') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Accounts</div>
+        <div class="stat-value">{{ s.total_accounts|default('-') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Operations</div>
+        <div class="stat-value">{{ s.total_operations|default('-') }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total balance</div>
+        <div class="stat-value">
+            {% if s.total_balance is defined %}
+                {{ "%.0f"|format(s.total_balance) }} PKR
+            {% else %}
+                -
+            {% endif %}
+        </div>
+    </div>
+</div>

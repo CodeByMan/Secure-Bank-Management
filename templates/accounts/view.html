@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Account {{ account.account_number }} - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="margin-bottom: 16px;">
+        <a href="{{ url_for('clients.view', id=client_id) }}" style="color: var(--text-secondary); text-decoration: none; font-size: 14px;">← Back to client</a>
+    </div>
+
+    <h1 style="font-size: 24px; font-weight: 400; margin-bottom: 24px;">Account {{ account.account_number }}</h1>
+
+<!-- Account Summary -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px;">
+    <div class="stat-card">
+        <div class="stat-label">Current Balance</div>
+        <div class="stat-value" style="font-size: 28px;">{{ "%.2f"|format(account.balance) }} PKR</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Status</div>
+        <div style="margin-top: 8px;">
+            {% if account.status.value == 'active' %}
+                <span class="badge badge-success">Active</span>
+            {% else %}
+                <span class="badge bg-secondary">{{ account.status.value|status_label }}</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Opening date</div>
+        <div style="font-size: 16px; margin-top: 8px;">{{ (account.opened_at|to_local_time).strftime('%d/%m/%Y') }}</div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="actions">
+    <div class="actions-title">Actions</div>
+    {% if account.status.value == 'active' %}
+    <div class="action-grid">
+        <a href="{{ url_for('operations.deposit', account_id=account.id) }}" class="btn btn-primary" style="background: #1e8e3e; border-color: #1e8e3e;">Make deposit</a>
+        <a href="{{ url_for('operations.withdrawal', account_id=account.id) }}" class="btn" style="border-color: #f9ab00; color: #b06000;">Make withdrawal</a>
+        <button type="button" class="btn" style="border-color: var(--danger); color: var(--danger);" onclick="showModal('close')">Close Account</button>
+    </div>
+
+    {% elif account.status.value == 'closed' %}
+    <div style="background: #fef7e0; border: 1px solid #fbbc04; border-radius: 4px; padding: 24px; text-align: center;">
+        <div style="font-size: 16px; color: #b06000; margin-bottom: 16px; font-weight: 500;">
+            ⚠ This account is closed
+        </div>
+        <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;">
+            No operation is available. Reopen the account to continue.
+        </div>
+        {% if account.client.status.value == 'active' %}
+            <button type="button" class="btn btn-primary" style="background: #1e8e3e; border-color: #1e8e3e;" onclick="showModal('reopen')">Reopen Account</button>
+        {% else %}
+            <p style="font-size: 13px; color: var(--danger); font-weight: 500;">
+                ⚠ Unable to reopen — fictional client status: {{ account.client.status.value|status_label }}
+            </p>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div style="padding: 16px; background: #fef7e0; border: 1px solid #fbbc04; border-radius: 4px; color: var(--text-secondary); text-align: center;">
+        ⚠ No operation available — account status: {{ account.status.value|status_label }}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Reusable Modal -->
+{% include 'components/management_modal.html' %}
+
+<script>
+const mgmtConfigs = {
+    close: {
+        title: 'Close the account',
+        action: '{{ url_for("accounts.close", id=account.id) }}',
+        submitText: 'Confirm closure',
+        submitStyle: 'background: #d93025; border-color: #d93025; color: white;',
+        reasons: ['Client request', 'Inactivity', 'Fraud exercise flag', 'Compliance review', 'Administrative decision', 'Fictional record closure']
+    },
+    reopen: {
+        title: 'Reopen the account',
+        action: '{{ url_for("accounts.reopen", id=account.id) }}',
+        submitText: 'Confirm reopening',
+        submitStyle: 'background: #1e8e3e; border-color: #1e8e3e; color: white;',
+        reasons: ['Client request', 'Correct an error', 'Administrative review', 'Compliance issue resolved', 'Reactivation after inactivity']
+    }
+};
+
+function showModal(type) {
+    showManagementModal(mgmtConfigs[type]);
+}
+</script>
+
+<!-- Operations History -->
+<div class="table-container">
+    <div class="table-header">
+        <div class="table-title">Operation History</div>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Balance After</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for op in operations %}
+            <tr>
+                <td>{{ (op.operation_date|to_local_time).strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>
+                    {% if op.operation_type.value == 'deposit' %}
+                        <span class="badge badge-success">Deposit</span>
+                    {% else %}
+                        <span class="badge badge-warning">Withdrawal</span>
+                    {% endif %}
+                </td>
+                <td style="font-weight: 500;">{{ "%.2f"|format(op.amount) }} PKR</td>
+                <td>{{ "%.2f"|format(op.balance_after) }} PKR</td>
+                <td style="color: var(--text-secondary); font-size: 13px;">{{ op.description or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                    No operation is recorded for this account.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</div>
+{% endblock %}

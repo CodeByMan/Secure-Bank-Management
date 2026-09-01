@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Approvals - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-shield-lock text-primary"></i> Maker-Checker Validation</h1>
+    <span class="badge bg-primary rounded-pill px-3">{{ requests|length }} pending</span>
+</div>
+
+<div class="table-toolbar mb-3 d-flex justify-content-between align-items-center">
+        <div>
+            <button id="filterMineBtn" type="button" class="btn btn-sm btn-outline-primary">Show my requests</button>
+            {% if filter == 'mine' %}
+                <a href="{{ url_for('checker.index') }}" class="btn btn-sm btn-link">View all</a>
+            {% endif %}
+        </div>
+        <div class="small text-muted" id="visibleCount">{{ requests|length }} visible</div>
+    </div>
+
+    <div class="table-responsive shadow-sm">
+    <table class="table table-hover align-middle mb-0 text-nowrap">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Operation type</th>
+                <th>Submitted by</th>
+                <th>Date</th>
+                <th>Details</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+                <tbody>
+                    {% for request in requests %}
+                    <tr data-creator="{{ request.created_by_id }}">
+                        <td class="px-4 text-muted small">#{{ request.id }}</td>
+                        <td>
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
+                                {{ request.operation_type }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fw-bold text-dark"><a href="{{ url_for('users.view', id=request.created_by.id) }}">{{ request.created_by.username }}</a></span>
+                        </td>
+                        <td class="small text-muted">{{ request.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-info view-value btn-mobile-icon" data-key="Payload #{{ request.id }}" data-value="{{ request.payload | e }}" title="View Payload">
+                                <i class="bi bi-eye"></i><span class="label ms-1 d-none d-sm-inline">View</span>
+                            </button>
+                        </td>
+                        <td class="text-end px-4">
+                            <div class="d-flex justify-content-end gap-2">
+                                {% if g.user and request.created_by_id == g.user.id %}
+                                    <button type="button" class="btn btn-sm btn-danger px-3 btn-decision btn-mobile-icon" data-id="{{ request.id }}" data-action="withdraw" title="Withdraw">
+                                        <i class="bi bi-x-lg"></i><span class="label ms-1 d-none d-sm-inline">Withdraw</span>
+                                    </button>
+                                {% else %}
+                                    <button type="button" class="btn btn-sm btn-success px-3 btn-decision btn-mobile-icon"
+                                        data-id="{{ request.id }}" data-action="approve" title="Approve">
+                                        <i class="bi bi-check-lg"></i><span class="label ms-1 d-none d-sm-inline">Approve</span>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger btn-danger-soft px-3 btn-decision btn-mobile-icon"
+                                        data-id="{{ request.id }}" data-action="reject" title="Reject">
+                                        <i class="bi bi-x-lg"></i><span class="label ms-1 d-none d-sm-inline">Reject</span>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <i class="bi bi-check-all fs-1 opacity-25 d-block mb-3"></i>
+                            No operation is pending approval.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% include 'components/management_modal.html' %}
+    {# Shared view modal for payload preview #}
+    {% include 'components/modals/view_value.html' %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleDetails(id) {
+    const el = document.getElementById(id);
+    if (el) {
+        el.classList.toggle('show');
+    }
+}
+
+function confirmDecision(id, action) {
+    const isApprove = action === 'approve';
+    // For approve/reject we use the decide endpoint
+    if (action === 'approve' || action === 'reject') {
+        const url = "{{ url_for('checker.decide', id=0) }}".replace('/0', '/' + id);
+        showManagementModal({
+            title: isApprove ? "Approve operation #" + id : "Reject operation #" + id,
+            action: url,
+            submitText: isApprove ? "Confirm approval" : "Confirm rejection",
+            submitStyle: isApprove ? "background: #22c55e; border-color: #22c55e; color: white;" : "background: #dc2626; border-color: #dc2626; color: white;",
+            extraField: { name: "action", value: action },
+            reasons: isApprove ?
+                ["Standard manual validation", "Verification completed", "Supervisor decision", "Complete case file"] :
+                ["Invalid data", "Fraud exercise flag", "Insufficient balance", "Client not found", "Missing document"]
+        });
+        return;
+    }
+
+    // Withdraw flow for maker
+    if (action === 'withdraw') {
+        const url = "{{ url_for('checker.withdraw', id=0) }}".replace('/0', '/' + id);
+        showManagementModal({
+            title: "Withdraw request #" + id,
+            action: url,
+            submitText: "Withdraw request",
+            submitStyle: "background: #dc2626; border-color: #dc2626; color: white;",
+            extraField: null,
+            reasons: ["Voluntary withdrawal", "Input error", "Information incomplete"]
+        });
+        return;
+    }
+}
+
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.btn-decision').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const action = this.getAttribute('data-action');
+            confirmDecision(id, action);
+        });
+    });
+    // Client-side filter: show only rows created by current user
+    const filterBtn = document.getElementById('filterMineBtn');
+    const myId = "{{ g.user.id if g.user else '' }}";
+    const tbody = document.querySelector('table tbody');
+    const rows = tbody ? Array.from(tbody.querySelectorAll('tr[data-creator]')) : [];
+    const visibleCountEl = document.getElementById('visibleCount');
+
+    function updateVisibleCount() {
+        const visible = rows.filter(r => !r.classList.contains('d-none'));
+        if (visibleCountEl) visibleCountEl.textContent = `${visible.length} visible`;
+    }
+
+    function applyClientFilter(showOnlyMine) {
+        rows.forEach(r => {
+            const creator = r.getAttribute('data-creator');
+            if (showOnlyMine && creator !== String(myId)) {
+                r.classList.add('d-none');
+            } else {
+                r.classList.remove('d-none');
+            }
+        });
+        updateVisibleCount();
+    }
+
+    if (filterBtn) {
+        // If the server applied the 'mine' filter, keep button active
+        const serverFilter = '{{ filter or "" }}';
+        if (serverFilter === 'mine') {
+            filterBtn.classList.add('active');
+            filterBtn.textContent = 'My requests (filtered)';
+            applyClientFilter(true);
+        }
+
+        filterBtn.addEventListener('click', function() {
+            const isActive = filterBtn.classList.toggle('active');
+            filterBtn.textContent = isActive ? 'Show all' : 'Show my requests';
+            applyClientFilter(isActive);
+            // update URL param without reloading
+            const url = new URL(window.location);
+            if (isActive) {
+                url.searchParams.set('filter', 'mine');
+            } else {
+                url.searchParams.delete('filter');
+            }
+            window.history.replaceState({}, '', url);
+        });
+    }});
+</script>
+{% endblock %}

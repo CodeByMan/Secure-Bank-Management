@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Audit Log — Secure Bank Manager{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between"><h1>Audit Log</h1><div><a class="btn" href="{{ url_for('audit.verify') }}">Verify chain</a> <a class="btn" href="{{ url_for('audit.closures') }}">Local anchors</a></div></div>
+<p>This HMAC chain is tamper-evident under the assumptions documented in SECURITY.md.</p>
+<table class="table"><thead><tr><th>Sequence</th><th>Time</th><th>Action</th><th>Target</th><th></th></tr></thead><tbody>
+{% for log in logs %}<tr><td>{{ log.sequence }}</td><td>{{ log.timestamp|to_local_time }}</td><td>{{ log.action }}</td><td>{{ log.target or '-' }}</td><td><a href="{{ url_for('audit.view', id=log.id) }}">View</a></td></tr>
+{% else %}<tr><td colspan="5">No audit events.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Recovery 2FA - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; width: 100%; text-align: center;">
+
+    <div class="card shadow border-0" style="width: 100%; max-width: 450px; margin: 0 auto;">
+        <div class="card-body p-4 p-md-5" style="text-align: center !important;">
+
+            <div style="margin-bottom: 2rem;">
+                <div style="background-color: rgba(255, 193, 7, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                    <i class="bi bi-key text-warning" style="font-size: 2.5rem;"></i>
+                </div>
+                <h2 style="font-weight: 700; font-size: 1.75rem; margin-bottom: 0.75rem;">Recovery code</h2>
+                <p style="color: #6c757d; margin: 0 auto; max-width: 350px;">Use one recovery code issued during setup.</p>
+            </div>
+
+            <form method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div style="margin-bottom: 2rem;">
+                    <input type="text"
+                           name="code"
+                           id="code"
+                           maxlength="8"
+                           required
+                           placeholder="H1G2F3E4"
+                           autofocus
+                           style="width: 100%; height: 70px; font-size: 2rem; text-align: center; font-weight: 700; letter-spacing: 0.3rem; border: 1px solid #ced4da; border-radius: 0.5rem; display: block; margin: 0 auto; text-transform: uppercase;"
+                           spellcheck="false">
+                </div>
+
+                <button type="submit" class="btn btn-warning text-white" style="width: 100%; height: 60px; font-weight: 700; border-radius: 0.5rem; font-size: 1.1rem;">
+                    Verify and sign in <i class="bi bi-unlock ms-2"></i>
+                </button>
+
+                <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <a href="{{ url_for('auth.mfa_verify') }}" style="color: #0d6efd; text-decoration: none; font-size: 0.9rem; font-weight: 600;">
+                        Use an authenticator code
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" style="color: #6c757d; text-decoration: none; font-size: 0.9rem;">
+                        <i class="bi bi-arrow-left me-1"></i> Back to sign in
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

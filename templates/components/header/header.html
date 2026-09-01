@@ -1,0 +1,9 @@
+<header class="header">
+  <div class="header-content">
+    <a href="{{ url_for('home') if g.user else url_for('auth.login') }}" class="logo">Secure Bank Manager</a>
+    {% if g.user %}
+      {# Include the navigation component which contains desktop and mobile navs #}
+      {% include 'components/navigation/nav.html' %}
+    {% endif %}
+  </div>
+</header>

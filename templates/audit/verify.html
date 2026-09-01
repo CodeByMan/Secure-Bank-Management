@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %}Audit Verification — Secure Bank Manager{% endblock %}
+{% block content %}
+<h1>Audit Chain Verification</h1>
+<p class="{{ 'text-success' if result.valid else 'text-danger' }}">{{ 'The retained chain is valid.' if result.valid else 'Verification found a problem.' }}</p>
+{% if result.errors %}<ul>{% for row_id, code in result.errors %}<li>Entry {{ row_id }}: {{ code }}</li>{% endfor %}</ul>{% endif %}
+<h2>Limitations</h2><ul>{% for limitation in result.limitations %}<li>{{ limitation }}</li>{% endfor %}</ul>
+<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn" type="submit">Verify again</button></form>
+{% endblock %}

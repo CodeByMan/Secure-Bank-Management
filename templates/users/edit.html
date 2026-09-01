@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit {{ user.username }} - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <h1 style="font-size: 24px; font-weight: 400; margin-bottom: 24px;">Edit user</h1>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username"
+                           value="{{ user.username }}" required class="form-control" autofocus>
+                    {% if errors and errors.get('username') %}
+                        <div class="invalid-feedback">{{ errors.get('username') }}</div>
+                    {% else %}
+                        <div class="invalid-feedback" style="display:none;"></div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="role" class="form-label">Role</label>
+                    <select id="role" name="role" required class="form-control" {% if g.user.id == user.id %}disabled{% endif %}>
+                        {% for role in manageable_roles %}
+                            <option value="{{ role.value }}" {% if user.role == role %}selected{% endif %}>
+                                {% if role.value == 'superadmin' %}
+                                    SUPERADMIN - Full access
+                                {% elif role.value == 'admin' %}
+                                    ADMIN - Management operators
+                                {% else %}
+                                    OPERATOR - Operations banking
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if g.user.id == user.id %}
+                        <small class="form-text text-muted">You cannot change your own role</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-actions" style="display:flex; gap:12px;">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <a href="{{ url_for('users.view', id=user.id) }}" class="btn">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

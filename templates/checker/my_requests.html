@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}My requests - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My pending requests</h1>
+</div>
+
+<div class="table-responsive shadow-sm">
+    <table class="table table-hover align-middle mb-0 text-nowrap">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Type</th>
+                <th>Date</th>
+                <th>Details</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for request in requests %}
+            <tr>
+                <td class="px-4 text-muted small">#{{ request.id }}</td>
+                <td>{{ request.operation_type }}</td>
+                <td class="small text-muted">{{ request.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-info" onclick="toggleDetails('d-{{ request.id }}')">View</button>
+                </td>
+                <td class="text-end">
+                    <form method="post" action="{{ url_for('checker.withdraw', id=request.id) }}" style="display:inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-danger">Withdraw</button>
+                    </form>
+                </td>
+            </tr>
+            <tr class="collapse" id="d-{{ request.id }}">
+                <td colspan="5" class="bg-light-subtle px-4 py-3">
+                    <div class="p-3 bg-white rounded border small">
+                        <pre class="mb-0"><code>{{ request.payload | tojson(indent=2) }}</code></pre>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center py-5 text-muted">No request found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

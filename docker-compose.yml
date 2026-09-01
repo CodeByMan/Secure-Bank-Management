@@ -1,0 +1,12 @@
+services:
+  secure-bank-manager:
+    build: .
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: unless-stopped
+    init: true
+

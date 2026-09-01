@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Service Status — Secure Bank Manager{% endblock %}
+{% block head_extra %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<main style="padding: 40px 0; text-align: center;">
+  <section class="card" style="max-width: 760px; margin: 0 auto; padding: 24px;">
+    <h1>{{ 'Operations suspended' if active else 'Service status' }}</h1>
+    <p class="lead">{{ message }}</p>
+    {% if not g.user %}<p>Administrators may <a href="{{ url_for('auth.login') }}">sign in</a> to manage the local exercise.</p>{% endif %}
+  </section>
+</main>
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}Audit Chain — Secure Bank Manager{% endblock %}
+{% block content %}
+<h1>Audit Chain</h1><p>{{ entries|length }} retained events. This view does not provide external anchoring.</p>
+<table class="table"><thead><tr><th>Sequence</th><th>Event ID</th><th>Status</th><th>Previous hash</th></tr></thead><tbody>
+{% for entry in entries %}<tr><td>{{ entry.sequence }}</td><td><code>{{ entry.event_id }}</code></td><td>{{ entry.status }}</td><td><code>{{ entry.previous_hash[:16] }}...</code></td></tr>{% else %}<tr><td colspan="4">No events.</td></tr>{% endfor %}
+</tbody></table>{% endblock %}

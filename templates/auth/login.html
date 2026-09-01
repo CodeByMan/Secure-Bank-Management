@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign in - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 80px auto;">
+    <div class="card">
+        <div class="card-body" style="padding: 40px;">
+            <h1 style="font-size: 24px; font-weight: 400; margin-bottom: 32px; text-align: center;">Sign in</h1>
+            <form method="post">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control" id="username" name="username" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 16px;">Sign in</button>
+            </form>
+        </div>
+        <div style="padding: 20px; text-align: center; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 12px;">
+            Access is restricted to authorized staff
+        </div>
+    </div>
+
+    <!-- <div style="margin-top: 32px; text-align: center; color: var(--text-secondary); font-size: 14px;">
+        <p>Demo accounts are created explicitly. See <code>README.md</code> or <code>scripts/seed_dev_users.py</code> (local development only).</p>
+    </div> -->
+</div>
+{% endblock %}

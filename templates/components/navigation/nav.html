@@ -1,0 +1,103 @@
+<button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Menu">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+</button>
+<nav class="nav-links" role="navigation" aria-label="Primary navigation">
+    <div class="nav-left">
+        <a href="{{ url_for('dashboard') }}" class="{{ 'active' if request.path == url_for('dashboard') else '' }}">Dashboard</a>
+        <a href="{{ url_for('clients.index') }}" class="{{ 'active' if request.path.startswith(url_for('clients.index')) else '' }}">Clients</a>
+        {% if has_permission(g.user, 'users.view') %}
+            <a href="{{ url_for('users.index') }}" class="{{ 'active' if request.path.startswith(url_for('users.index')) else '' }}">Users</a>
+        {% endif %}
+        {% if has_permission(g.user, 'policies.view') %}
+            <a href="{{ url_for('policies.index') }}" class="{{ 'active' if request.path.startswith(url_for('policies.index')) else '' }}">Policies</a>
+        {% endif %}
+        {% if has_permission(g.user, 'approvals.view') %}
+            <a href="{{ url_for('checker.index') }}" class="{{ 'active' if request.path.startswith(url_for('checker.index')) else '' }}{% if pending_approvals_count and pending_approvals_count > 0 %} has-badge{% endif %}">Approvals{% if pending_approvals_count and pending_approvals_count > 0 %} <span class="badge-pending" aria-hidden="true">{{ pending_approvals_count }}</span><span class="sr-only">{{ pending_approvals_count }}pending</span>{% endif %}</a>
+        {% endif %}
+        {% if has_permission(g.user, 'audit.view') %}
+            <a href="{{ url_for('audit.index') }}" class="{{ 'active' if request.path.startswith(url_for('audit.index')) else '' }}">Audit</a>
+        {% endif %}
+    </div>
+    <div class="nav-right">
+        <div class="profile-dropdown" id="profileDropdown">
+            <button class="profile-toggle {% if request.path.startswith(url_for('profile')) %}active{% endif %}" aria-haspopup="true" aria-expanded="false" type="button" id="profileToggle" title="{{ g.user.username }}">
+                <span class="avatar" aria-hidden="true">{{ ((g.user.display_name or g.user.username)[0]) | upper }}</span>
+                <span class="caret">▾</span>
+            </button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="profileToggle">
+                <li class="dropdown-header">
+                    <div class="dropdown-user">
+                        <span class="dropdown-avatar">{{ ((g.user.display_name or g.user.username)[0]) | upper }}</span>
+                        <div class="dropdown-user-info">
+                            <div class="dropdown-username">{{ g.user.display_name or g.user.username }}</div>
+                            <div class="dropdown-role">
+                                {% if g.user.role.value == 'superadmin' %}
+                                    <span class="badge role-super">SUPERADMIN</span>
+                                {% elif g.user.role.value == 'admin' %}
+                                    <span class="badge role-admin">ADMIN</span>
+                                {% else %}
+                                    <span class="badge role-operator">OPERATOR</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <li class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('profile') }}">My profile</a></li>
+                {% if g.user.role.value in ['admin', 'superadmin'] %}
+                    <li><a class="dropdown-item" href="{{ url_for('users.index') }}">User management</a></li>
+                {% endif %}
+                <li class="dropdown-divider"></li>
+                <li><form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="dropdown-item logout" type="submit">Sign out</button></form></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+<nav class="mobile-nav">
+    <div class="mobile-nav-header">
+        <span class="mobile-nav-title">Menu</span>
+        <button class="mobile-nav-close" onclick="toggleMobileMenu()" aria-label="Close">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+    <div class="mobile-nav-content">
+        <div class="mobile-nav-group">
+            <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('clients.index') }}">Clients</a>
+            {% if has_permission(g.user, 'users.view') %}
+                <a href="{{ url_for('users.index') }}">Users</a>
+            {% endif %}
+
+            {% if has_permission(g.user, 'approvals.view') %}
+                <a href="{{ url_for('checker.index') }}" class="{% if pending_approvals_count and pending_approvals_count > 0 %}has-badge{% endif %}">Approvals{% if pending_approvals_count and pending_approvals_count > 0 %} <span class="badge-pending small" aria-hidden="true">{{ pending_approvals_count }}</span><span class="sr-only">{{ pending_approvals_count }}pending</span>{% endif %}</a>
+            {% endif %}
+            {% if has_permission(g.user, 'policies.view') %}
+                <a href="{{ url_for('policies.index') }}">Policies</a>
+            {% endif %}
+            {% if has_permission(g.user, 'audit.view') %}
+                <a href="{{ url_for('audit.index') }}">Audit</a>
+            {% endif %}
+        </div>
+        <div class="mobile-nav-divider"></div>
+        <div class="mobile-nav-group">
+            <a href="{{ url_for('profile') }}">{{ g.user.username }}
+                {% if g.user.role.value == 'superadmin' %}
+                    <span class="badge" style="background: #dc2626; color: white;">SUPERADMIN</span>
+                {% elif g.user.role.value == 'admin' %}
+                    <span class="badge" style="background: #f59e0b; color: white;">ADMIN</span>
+                {% else %}
+                    <span class="badge" style="background: #3b82f6; color: white;">OPERATOR</span>
+                {% endif %}
+            </a>
+            <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit" class="mobile-nav-logout">Sign out</button></form>
+        </div>
+    </div>
+</nav>

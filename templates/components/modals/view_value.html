@@ -1,0 +1,52 @@
+{# Reusable modal for viewing long policy values #}
+<style>
+/* Viewer modal: ensure long values wrap and are scrollable */
+#viewValueModal pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: auto;
+  max-height: 50vh;
+}
+
+#viewValueModal .modal-body { padding: 1rem; }
+
+/* Simple fallback modal (works without Bootstrap JS) */
+#viewValueModal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+}
+#viewValueModal.show { display: flex; }
+#viewValueModal .modal-dialog { width: auto; max-width: 900px; padding: 16px; }
+#viewValueModal .modal-content { border-radius: 8px; overflow: hidden; background: #fff; box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
+#viewValueModal .modal-header { display:flex; align-items:center; justify-content:space-between; padding: 0.75rem 1rem; border-bottom: 1px solid #eee; }
+#viewValueModal .modal-title { margin:0; font-weight:600; }
+#viewValueModal .modal-footer { display:flex; gap:8px; justify-content:flex-end; padding: .6rem .9rem; border-top: 1px solid #eee; }
+#viewValueModal .btn-close { border: none; background: transparent; font-size: 1.1rem; cursor: pointer; color: #6c757d; }
+@media (max-width: 576px) {
+  #viewValueModal .modal-dialog { width: auto; max-width: 95%; }
+}
+
+</style>
+
+<div class="modal fade" id="viewValueModal" tabindex="-1" aria-hidden="true" aria-labelledby="viewValueModalLabel">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewValueModalLabel">Value</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <pre id="viewValueContent" class="small text-wrap" style="white-space:pre-wrap; word-break:break-word; overflow:auto; max-height:50vh;"></pre>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-outline-secondary" id="copyValueBtn" title="Copy">Copy</button>
+        <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

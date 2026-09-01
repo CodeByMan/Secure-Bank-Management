@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Policy - {{ policy.key if policy else 'New policy' }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Edit policy</h1>
+    <div>
+        <a href="{{ url_for('policies.index') }}" class="btn btn-sm btn-outline-secondary">Back to policies</a>
+    </div>
+</div>
+
+<div class="row swap-on-mobile">
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                {% if has_permission(g.user, 'policies.edit') %}
+                <form method="post" novalidate>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label">Key</label>
+                        <div class="d-flex align-items-center gap-2">
+                            <input class="form-control" name="key" value="{{ policy.key if policy else '' }}" disabled>
+                            {% if policy and policy.active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Value</label>
+                        <div id="policyValueContainer">
+                            <textarea id="policyValueTextarea" name="value" class="form-control" rows="4" placeholder="Value">{{ policy.value if policy else '' }}</textarea>
+                            <input id="policyValueNumber" name="value" type="number" class="form-control" style="display:none" placeholder="Numeric value">
+                            <div id="policyValueBool" class="form-check form-switch" style="display:none">
+                                <input class="form-check-input" type="checkbox" id="policyValueCheckbox" name="value" value="true">
+                                <label class="form-check-label" for="policyValueCheckbox">True</label>
+                            </div>
+                            <!-- Fallback hidden false for unchecked checkbox (placed after checkbox so checked=true takes precedence) -->
+                            <input type="hidden" id="policyValueHidden" name="value" value="{{ policy.value if policy else '' }}">
+                        </div>
+                        <div class="form-text">Example: 90, true, ["admin","superadmin"], etc. <button id="formatJsonBtn" type="button" class="btn btn-sm btn-outline-secondary ms-2" style="display:none">Format JSON</button></div>
+                        <div class="invalid-feedback d-none" id="policyValueError"></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Type</label>
+                            <select name="type" class="form-select">
+                                <option value="string" {% if policy and policy.type=='string' %}selected{% endif %}>string</option>
+                                <option value="int" {% if policy and policy.type=='int' %}selected{% endif %}>int</option>
+                                <option value="json" {% if policy and policy.type=='json' %}selected{% endif %}>json</option>
+                                <option value="bool" {% if policy and policy.type=='bool' %}selected{% endif %}>bool</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">State</label>
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="policyActive" name="active" {% if policy and policy.active %}checked{% endif %}>
+                                <label class="form-check-label" for="policyActive">Active</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3">{{ policy.description if policy else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Comment (audit)</label>
+                        <input class="form-control" name="comment" placeholder="Reason for change">
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">Save</button>
+                        <button type="button" class="btn btn-outline-secondary btn-edit" data-href="{{ url_for('policies.index') }}">Cancel</button>
+                        {% if has_permission(g.user, 'policies.toggle') %}
+                        <form method="post" action="{{ url_for('policies.toggle', id=policy.id) }}" style="display:inline">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-outline-danger" type="submit">{{ 'Disable' if policy and policy.active else 'Enable' }}</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </form>
+                {% else %}
+                    <div class="alert alert-warning">You may view this policy but cannot edit it.</div>
+                    <dl>
+                        <dt>Key</dt><dd>{{ policy.key }}</dd>
+                        <dt>Value</dt><dd><pre>{{ policy.value }}</pre></dd>
+                        <dt>Type</dt><dd>{{ policy.type }}</dd>
+                        <dt>Status</dt><dd>{{ 'Active' if policy.active else 'Inactive' }}</dd>
+                        <dt>Description</dt><dd>{{ policy.description }}</dd>
+                    </dl>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if has_permission(g.user, 'policies.history') %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <strong>Change history</strong>
+                <div class="small text-muted">Latest changes</div>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush timeline">
+                    {% for h in history %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ users_map.get(h.updated_by) if users_map else (h.updated_by or '—') }}</strong>
+                                <div class="small text-muted">{{ h.updated_at.strftime('%d/%m/%Y %H:%M') }}</div>
+                            </div>
+                            <div class="text-end small text-muted">ID: {{ h.id }}</div>
+                        </div>
+                        <div class="mt-2">
+                            {% if h.comment %}
+                                <div class="mb-2"><em class="text-muted">{{ h.comment }}</em></div>
+                            {% endif %}
+
+                            <pre class="mb-0 p-2 bg-light rounded small history-value" data-full="{{ h.value|e }}">{{ h.value|truncate(240) }}</pre>
+
+                            {% if h.value and h.value|length > 240 %}
+                                <button type="button" class="btn btn-link btn-sm expand-history mt-2" aria-expanded="false">View more</button>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted small">No history</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <style>
+                /* Small timeline tweaks */
+                .timeline .list-group-item { border-left: 3px solid #f1f3f5; }
+                .history-value { white-space: pre-wrap; max-height: 6.5rem; overflow: hidden; }
+                .history-value.expanded { max-height: none; }
+            </style>
+            <script>
+                document.addEventListener('DOMContentLoaded', function(){
+                    document.querySelectorAll('.expand-history').forEach(function(btn){
+                        btn.addEventListener('click', function(){
+                            const pre = this.closest('li').querySelector('.history-value');
+                            const expanded = pre.classList.toggle('expanded');
+                            this.textContent = expanded ? 'View less' : 'View more';
+                            this.setAttribute('aria-expanded', String(expanded));
+                            if (expanded && pre.dataset.full) {
+                                pre.textContent = pre.dataset.full;
+                            } else if (!expanded && pre.dataset.full) {
+                                // truncate when collapsing - keep first 240 chars
+                                const short = pre.dataset.full.slice(0, 240);
+                                pre.textContent = short + (pre.dataset.full.length > 240 ? '...' : '');
+                            }
+                        });
+                    });
+                });
+            </script>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

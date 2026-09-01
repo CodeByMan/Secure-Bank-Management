@@ -1,0 +1,5 @@
+{% extends 'base.html' %}
+{% block title %}Audit Entry — Secure Bank Manager{% endblock %}
+{% block content %}<h1>Audit Entry {{ entry.id }}</h1>
+<dl><dt>Event ID</dt><dd><code>{{ entry.event_id }}</code></dd><dt>Sequence</dt><dd>{{ entry.sequence }}</dd><dt>Action</dt><dd>{{ entry.action }}</dd><dt>Target</dt><dd>{{ entry.target or '-' }}</dd><dt>Details</dt><dd><pre>{{ entry.details|decode_json }}</pre></dd><dt>Hash</dt><dd><code>{{ entry.current_hash }}</code></dd></dl>
+<a href="{{ url_for('audit.index') }}">Back to audit log</a>{% endblock %}

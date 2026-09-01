@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Withdrawal - Account {{ account.account_number }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 1200px; margin: 0 auto;">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <h1 style="font-size: 24px; font-weight: 400; margin-bottom: 24px;">Make withdrawal</h1>
+    <div class="card" style="border-color: var(--warning);">
+        <div class="card-body">
+            <div style="background: #fef7e0; border: 1px solid #fbbc04; border-radius: 4px; padding: 16px; margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="color: var(--text-secondary); font-size: 14px;">Account :</span>
+                    <strong style="font-family: monospace;">{{ account.account_number }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-secondary); font-size: 14px;">Current balance :</span>
+                    <strong style="color: #b06000;">{{ "%.2f"|format(account.balance) }} {{ config.CURRENCY }}</strong>
+                </div>
+            </div>
+
+            <form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label for="amount" class="form-label">Amount to withdraw *</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" step="0.001" class="form-control" id="amount" name="amount"
+                               min="0.001" max="{{ account.balance - config.MINIMUM_ACCOUNT_BALANCE }}" required autofocus style="flex: 1; font-size: 16px;">
+                        <span style="padding: 10px 16px; border: 1px solid var(--border); border-radius: 4px; background: var(--background);">{{ config.CURRENCY }}</span>
+                    </div>
+                    <div style="font-size: 12px; color: #b06000; margin-top: 8px;">
+                        Maximum available: {{ "%.2f"|format(account.balance - config.MINIMUM_ACCOUNT_BALANCE) }} {{ config.CURRENCY }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="description" class="form-label">Description (optional)</label>
+                    <input type="text" class="form-control" id="description" name="description"
+                           placeholder="Ex: ATM withdrawal">
+                </div>
+
+                <div style="display: flex; justify-content: space-between; margin-top: 32px;">
+                    <a href="{{ url_for('accounts.view', account_number=account.account_number) }}" class="btn">Cancel</a>
+                    <button type="submit" class="btn btn-primary" style="background: #f9ab00; border-color: #f9ab00; color: var(--text-primary);">Confirm Withdrawal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

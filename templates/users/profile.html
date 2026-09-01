@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}My profile - Secure Bank Manager{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="font-size: 24px; font-weight: 400; margin-bottom: 16px;">My profile</h1>
+
+    <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">Information</div>
+        <div class="card-body">
+            <form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="update_profile">
+                <div style="margin-bottom: 12px;">
+                    <label style="font-size: 13px; font-weight: 500;">Username</label>
+                    <div style="font-family: monospace;">{{ user.username }}</div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label for="display_name" style="font-size: 13px; font-weight: 500;">Display name</label>
+                    <input id="display_name" name="display_name" class="form-control" value="{{ user.display_name or '' }}" maxlength="100">
+                    <div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">Optional. Used as the interface display name.</div>
+                </div>
+                <button class="btn" type="submit" style="background: #3b82f6; color:white;">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">Change password</div>
+        <div class="card-body">
+            <form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="action" value="change_password">
+                <div style="margin-bottom: 12px;">
+                    <label for="current_password" style="font-size: 13px; font-weight: 500;">Current password</label>
+                    <input id="current_password" name="current_password" type="password" class="form-control" required>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label for="new_password" style="font-size: 13px; font-weight: 500;">New password</label>
+                    <input id="new_password" name="new_password" type="password" class="form-control" required>
+                    <div style="font-size:12px; color:var(--text-secondary); margin-top:6px;">At least 12 characters.</div>
+                </div>
+                <div style="margin-bottom: 12px;">
+                    <label for="confirm_password" style="font-size: 13px; font-weight: 500;">Confirm new password</label>
+                    <input id="confirm_password" name="confirm_password" type="password" class="form-control" required>
+                </div>
+                <button class="btn" type="submit" style="background: #3b82f6; color:white;">Reset password</button>
+            </form>
+        </div>
+    <div class="card" style="margin-top: 20px;">
+        <div class="card-header">Security & MFA</div>
+        <div class="card-body">
+            {% if user.mfa_enabled %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="text-success me-2">
+                        <i class="bi bi-shield-check" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Multi-factor authentication enabled</div>
+                        <div class="text-muted small">This account requires a second factor.</div>
+                    </div>
+                </div>
+                <form action="{{ url_for('auth.mfa_disable') }}" method="POST" onsubmit="return confirm('Disable MFA?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Disable MFA</button>
+                </form>
+            {% else %}
+                <div class="d-flex align-items-center mb-3">
+                    <div class="text-warning me-2">
+                        <i class="bi bi-shield-exclamation" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold">Multi-factor authentication disabled</div>
+                        <div class="text-muted small">Enable MFA to protect this local account.</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.mfa_setup') }}" class="btn btn-primary btn-sm shadow-sm">
+                    Set up MFA <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

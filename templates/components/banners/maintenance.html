@@ -1,0 +1,23 @@
+{# Global maintenance banner (policy-driven) #} {% if MAINTENANCE_MODE %}
+<div class="maintenance-bar" role="status" aria-live="polite">
+  <div class="maintenance-content">
+    {% if g.user and g.user.role.value in ['admin','superadmin'] %}
+    <span class="maintenance-text">
+      <strong>Maintenance (admin)</strong> | {{ MAINTENANCE_MESSAGE }}
+      <span class="badge bg-secondary ms-2">ADMIN</span>
+    </span>
+    {% else %}
+    <span class="maintenance-text">
+      <strong>Maintenance</strong> - {{ MAINTENANCE_MESSAGE }}
+    </span>
+    <button
+      type="button"
+      class="maintenance-close"
+      aria-label="Close maintenance banner"
+    >
+      ✕
+    </button>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

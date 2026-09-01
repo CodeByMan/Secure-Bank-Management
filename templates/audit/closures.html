@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}Local Audit Anchors — Secure Bank Manager{% endblock %}
+{% block content %}<h1>Local Audit Anchors</h1>
+<p>These same-database checkpoints are helpful but are not independent or immutable.</p>
+<form method="post" action="{{ url_for('audit.close_yesterday') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn" type="submit">Anchor yesterday</button></form>
+<table class="table"><thead><tr><th>Date</th><th>Last event</th><th>Root hash</th></tr></thead><tbody>{% for item in closures %}<tr><td>{{ item.date }}</td><td>{{ item.last_log_id }}</td><td><code>{{ item.root_hash }}</code></td></tr>{% else %}<tr><td colspan="3">No local anchors.</td></tr>{% endfor %}</tbody></table>{% endblock %}
