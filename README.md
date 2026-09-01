@@ -120,6 +120,7 @@ Secure-Bank-Management/
 │   └── screenshots/
 │       ├── dashboard.png
 │       └── users.png
+├── SECURITY.md
 ├── src/                 # Flask application modules
 ├── templates/           # Jinja pages and components
 ├── static/              # CSS, JavaScript, and vendor assets
@@ -163,7 +164,7 @@ Production mode rejects missing, identical, default, or short Flask and HMAC key
 ### Prerequisites
 
 - Windows 10 or Windows 11
-- Python 3.13 or newer
+- Python 3.11 or newer (Python 3.13 recommended)
 - Internet access for the initial dependency installation
 
 ### 1. Create the Environment
@@ -171,7 +172,7 @@ Production mode rejects missing, identical, default, or short Flask and HMAC key
 Use **Windows Command Prompt (CMD)** from the project root:
 
 ```bat
-cd /d "D:\Resumes\Projects\Python\Projects\New folder\Secure-Bank-Management"
+cd /d "C:\path\to\Secure-Bank-Management"
 python -m venv secure_bank_manager_env
 call secure_bank_manager_env\Scripts\activate.bat
 ```
@@ -249,6 +250,9 @@ The displayed recovery codes are one-time emergency codes. Store them securely i
 ---
 
 ## 🐳 Docker
+
+For a fresh local Compose database, initialize the schema and demo users first
+using the Windows commands above, then run Compose from the project root:
 
 ```bat
 docker compose up --build

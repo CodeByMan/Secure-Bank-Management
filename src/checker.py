@@ -42,16 +42,18 @@ def _append_approval(session, operation_type, payload, user_id):
     return approval
 
 
-def submit_approval(session, operation_type, payload, user_id):
-    """Compatibility helper: append and flush in the caller's transaction."""
-    return _append_approval(session, operation_type, payload, user_id)
+def submit_approval(operation_type, payload, user_id, *, session=None):
+    """Create an approval in the caller's transaction when supplied.
 
-
-def submit_approval(operation_type, payload, user_id):
+    Without a session, this helper owns a serialized SQLite transaction. This
+    keeps the public compatibility API while ensuring there is only one
+    implementation of approval creation.
+    """
+    if session is not None:
+        return _append_approval(session, operation_type, payload, user_id)
     from src.db import serialized_session
-    with serialized_session() as session:
-        approval = _append_approval(session, operation_type, payload, user_id)
-    return approval
+    with serialized_session() as own_session:
+        return _append_approval(own_session, operation_type, payload, user_id)
 
 
 def _execute_payload(session, approval, checker_id):

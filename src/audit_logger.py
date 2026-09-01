@@ -116,8 +116,17 @@ def _verify_rows(rows: list[AuditLog]) -> dict:
     expected_previous = Config.GENESIS_HASH
     expected_sequence = 1
     for row in rows:
-        details = json.loads(row.details) if row.details else None
+        details_error = False
+        try:
+            details = json.loads(row.details) if row.details else None
+        except (TypeError, ValueError, json.JSONDecodeError):
+            # A tampered details field must be reported as a broken event,
+            # not crash the verification page.
+            details = row.details
+            details_error = True
         row_errors = []
+        if details_error:
+            row_errors.append("invalid_details_json")
         if row.sequence != expected_sequence:
             row_errors.append("missing_sequence")
         if row.previous_hash != expected_previous:
@@ -265,7 +274,25 @@ def closures():
 
 
 def verify_closures():
-    return True, []
+    """Verify stored local anchors against their event and HMAC payload."""
+    from src.db import session_factory
+
+    errors = []
+    session = session_factory()
+    try:
+        for closure in session.query(AuditClosure).order_by(AuditClosure.date).all():
+            event = session.get(AuditLog, closure.last_log_id)
+            if event is None:
+                errors.append((closure.id, "missing_anchor_event"))
+                continue
+            if event.current_hash != closure.root_hash:
+                errors.append((closure.id, "anchor_hash_mismatch"))
+            payload = f"ANCHOR|{closure.date.isoformat()}|{event.event_id}|{closure.root_hash}"
+            if not hmac.compare_digest(closure.hmac_signature, calculate_hmac(payload)):
+                errors.append((closure.id, "invalid_anchor_hmac"))
+    finally:
+        session.close()
+    return not errors, errors
 
 
 @audit_bp.route("/close-yesterday", methods=("POST",))
