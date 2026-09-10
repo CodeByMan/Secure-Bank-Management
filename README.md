@@ -164,7 +164,7 @@ Production mode rejects missing, identical, default, or short Flask and HMAC key
 ### Prerequisites
 
 - Windows 10 or Windows 11
-- Python 3.11 or newer (Python 3.13 recommended)
+- Python 3.13 or newer
 - Internet access for the initial dependency installation
 
 ### 1. Create the Environment
@@ -281,8 +281,6 @@ Python Developer
 ---
 
 ## 📄 License
-
-Copyright © 2026 Muhammad Ali Nawaz.
 
 This project is licensed under the [MIT License](LICENSE).
 
