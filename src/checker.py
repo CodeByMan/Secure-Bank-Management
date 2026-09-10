@@ -57,7 +57,7 @@ def submit_approval(operation_type, payload, user_id, *, session=None):
 
 
 def _execute_payload(session, approval, checker_id):
-    if approval.operation_type not in {"EXCEPTIONAL_WITHDRAWAL", "EXCEPTIONAL_WITHDRAWAL"}:
+    if approval.operation_type not in {"EXCEPTIONAL_WITHDRAWAL"}:
         raise ValueError("Unsupported approval type.")
     from src.operations import perform_operation
     success, result = perform_operation(
